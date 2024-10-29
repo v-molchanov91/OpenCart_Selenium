@@ -4,8 +4,8 @@ def test_check_title(browser):
 
 
 def test_check_title_login(browser):
-    browser.get(f'{browser.base_url}/en-gb?route=account/login')
-    assert 'Account Login' in browser.title, 'Тайтл отличается от ожидаемого'
+    browser.get(f'{browser.base_url}/administration')
+    assert 'Administration' in browser.title, 'Тайтл отличается от ожидаемого'
 
 
 

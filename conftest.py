@@ -5,9 +5,9 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 
 
 def pytest_addoption(parser):
-    parser.addoption('--browser', default='Chrome')
+    parser.addoption('--browser', default='chrome')
     parser.addoption('--yad', default='C:/Users/v.molchanov/Downloads/Drivers/yandexdriver.exe')
-    parser.addoption('base-url', default='http://192.168.1.20:8081/')
+    parser.addoption('--base-url', default='http://192.168.1.19:8081/')
 
 
 @pytest.fixture()
@@ -20,7 +20,7 @@ def browser(pytestconfig):
     if browser_name in ['ch', 'chrome']:
         driver = webdriver.Chrome()
     elif browser_name in ['ff', 'firefox']:
-        driver = webdriver.Firefox
+        driver = webdriver.Firefox()
     elif browser_name in ['ya', 'yandex']:
         service = Service(executable_path=yad)
         options = ChromeOptions()
@@ -28,6 +28,5 @@ def browser(pytestconfig):
         driver = webdriver.Chrome(options=options, service=service)
 
     driver.base_url = base_url
-
-    yield
+    yield driver
     driver.quit()
