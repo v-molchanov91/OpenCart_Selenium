@@ -1,4 +1,5 @@
 import pytest
+import allure
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options as ChromeOptions
@@ -30,3 +31,15 @@ def browser(pytestconfig):
     driver.base_url = base_url
     yield driver
     driver.quit()
+
+
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    result = outcome.get_result()
+    if result.when == "call" and result.failed:
+        browser = item.funcargs.get("browser")
+        if browser:
+            screenshot_path = "screenshot.png"
+            browser.save_screenshot(screenshot_path)
+            allure.attach.file(screenshot_path, name="Screenshot", attachment_type=allure.attachment_type.PNG)
