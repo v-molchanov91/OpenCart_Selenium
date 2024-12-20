@@ -36,10 +36,13 @@ def browser(pytestconfig):
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     outcome = yield
-    result = outcome.get_result()
-    if result.when == "call" and result.failed:
-        browser = item.funcargs.get("browser")
-        if browser:
-            screenshot_path = "screenshot.png"
-            browser.save_screenshot(screenshot_path)
-            allure.attach.file(screenshot_path, name="Screenshot", attachment_type=allure.attachment_type.PNG)
+    report = outcome.get_result()
+    if report.when == "call" and report.failed:
+        try:
+            driver = item.funcargs.get('browser')
+            if driver:
+                screenshot_path = f"screenshots/{item.name}.png"
+                driver.save_screenshot(screenshot_path)
+                allure.attach.file(screenshot_path, name="screenshot", attachment_type=allure.attachment_type.PNG)
+        except Exception as e:
+            print(f"Не удалось сделать скриншот: {e}")

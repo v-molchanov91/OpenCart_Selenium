@@ -9,11 +9,6 @@ class BasePage:
         self.browser = browser
         self.wait = WebDriverWait(browser, 10)
         self.logger = logging.getLogger(self.__class__.__name__)
-        handler = logging.FileHandler("test.log")
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
-        self.logger.setLevel(logging.INFO)
 
     def find(self, by, locator):
         try:
