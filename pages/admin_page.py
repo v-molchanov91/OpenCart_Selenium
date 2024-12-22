@@ -18,9 +18,9 @@ class AdminPage(BasePage):
     @allure.step("Логинимся в админку с логином {username}")
     def login(self, username, password):
         self.logger.info("Авторизация в админке.")
-        self.type(*self.USERNAME_INPUT, username)
-        self.type(*self.PASSWORD_INPUT, password)
-        self.click(*self.LOGIN_BUTTON)
+        self.input_text(*self.USERNAME_INPUT, username)
+        self.input_text(*self.PASSWORD_INPUT, password)
+        self.input_text(*self.LOGIN_BUTTON)
 
     @allure.step("Выходим из админки")
     def logout(self):
@@ -39,8 +39,6 @@ class AdminPage(BasePage):
         self.click(*self.ADD_PRODUCT_BUTTON)
         self.input_text(*self.PRODUCT_NAME_INPUT, product_name)
         self.click(*self.SAVE_BUTTON)
-
-
 
     @allure.step("Удаляем продукт")
     def delete_product(self):
