@@ -2,9 +2,11 @@
 import subprocess
 import datetime
 import re
+from collections import defaultdict
 
 
 def get_total_memory():
+    """Получить общий объем памяти системы (в МБ)."""
     result = subprocess.Popen(['free', '-m'], stdout=subprocess.PIPE)
     output, _ = result.communicate()
     lines = output.splitlines()
@@ -13,23 +15,26 @@ def get_total_memory():
 
 
 def get_cpu_cores():
+    """Получить количество доступных ядер процессора."""
     result = subprocess.Popen(['nproc'], stdout=subprocess.PIPE)
     output, _ = result.communicate()
     return int(output.strip())
 
 
 def get_process_info():
+    """Получить список процессов с помощью команды `ps aux`."""
     process = subprocess.Popen(['ps', 'aux'], stdout=subprocess.PIPE)
     stdout, _ = process.communicate()
     return stdout.decode('utf-8', errors='ignore')
 
 
 def parse_processes(ps_output, total_memory, total_cpu_cores):
+    """Разобрать данные о процессах."""
     lines = ps_output.splitlines()
     headers = lines[0]
     process_lines = lines[1:]
 
-    users = {}
+    users = defaultdict(int)  # Словарь с автоматическим значением 0 для новых ключей
     total_memory_used = 0.0
     total_cpu_used = 0.0
     max_memory_process = ("", 0.0)
@@ -46,9 +51,7 @@ def parse_processes(ps_output, total_memory, total_cpu_cores):
         except ValueError:
             continue
 
-        if user not in users:
-            users[user] = 0
-        users[user] += 1
+        users[user] += 1  # Увеличиваем счетчик процессов для пользователя
 
         total_memory_used += mem
         total_cpu_used += cpu
@@ -65,10 +68,47 @@ def parse_processes(ps_output, total_memory, total_cpu_cores):
     max_memory_percent = (max_memory_process[1] / total_memory) * 100
     max_cpu_percent = (max_cpu_process[1] / total_cpu_cores) * 100
 
-    return users, len(process_lines), total_memory_percent, total_cpu_percent, max_memory_process, max_cpu_process, max_memory_percent, max_cpu_percent, max_cpu_cores
+    return {
+        "users": users,
+        "total_processes": len(process_lines),
+        "total_memory_percent": total_memory_percent,
+        "total_cpu_percent": total_cpu_percent,
+        "max_memory_process": max_memory_process,
+        "max_cpu_process": max_cpu_process,
+        "max_memory_percent": max_memory_percent,
+        "max_cpu_percent": max_cpu_percent,
+        "max_cpu_cores": max_cpu_cores
+    }
+
+
+def generate_report(stats):
+    """Создать текст отчета о системе."""
+    report = [
+        "Отчёт о состоянии системы:",
+        "Пользователи системы: {}".format(", ".join(stats["users"].keys())),
+        "Процессов запущено: {}".format(stats["total_processes"]),
+        "",
+        "Пользовательских процессов:",
+    ]
+
+    for user, count in stats["users"].items():
+        report.append("{}: {}".format(user, count))
+
+    report.extend([
+        "",
+        "Всего памяти используется: {:.1f}%".format(stats["total_memory_percent"]),
+        "Всего CPU используется: {:.1f}%".format(stats["total_cpu_percent"]),
+        "Больше всего памяти использует: {:.1f}% ({})".format(stats["max_memory_percent"], stats["max_memory_process"][0]),
+        "Больше всего CPU использует: {:.1f}% ({}, используемые ядра: {:.2f})".format(
+            stats["max_cpu_percent"], stats["max_cpu_process"][0], stats["max_cpu_cores"]
+        ),
+    ])
+
+    return "\n".join(report)
 
 
 def save_report(report_text):
+    """Сохранить отчет в файл с меткой времени."""
     timestamp = datetime.datetime.now().strftime("%d-%m-%Y-%H:%M")
     filename = "{}-scan.txt".format(timestamp)
 
@@ -79,32 +119,14 @@ def save_report(report_text):
 
 
 def main():
+    """Основная логика программы."""
     total_memory = get_total_memory()
     total_cpu_cores = get_cpu_cores()
 
     ps_output = get_process_info()
-    users, total_processes, total_memory_percent, total_cpu_percent, max_memory_process, max_cpu_process, max_memory_percent, max_cpu_percent, max_cpu_cores = parse_processes(ps_output, total_memory, total_cpu_cores)
+    stats = parse_processes(ps_output, total_memory, total_cpu_cores)
 
-    report = [
-        "Отчёт о состоянии системы:",
-        "Пользователи системы: {}".format(", ".join(users.keys())),
-        "Процессов запущено: {}".format(total_processes),
-        "",
-        "Пользовательских процессов:",
-    ]
-
-    for user, count in users.items():
-        report.append("{}: {}".format(user, count))
-
-    report.extend([
-        "",
-        "Всего памяти используется: {:.1f}%".format(total_memory_percent),
-        "Всего CPU используется: {:.1f}%".format(total_cpu_percent),
-        "Больше всего памяти использует: {:.1f}% ({})".format(max_memory_percent, max_memory_process[0]),
-        "Больше всего CPU использует: {:.1f}% ({}, используемые ядра: {:.2f})".format(max_cpu_percent, max_cpu_process[0], max_cpu_cores),
-    ])
-
-    report_text = "\n".join(report)
+    report_text = generate_report(stats)
     print(report_text)
     save_report(report_text)
 
