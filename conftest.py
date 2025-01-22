@@ -30,6 +30,7 @@ def browser(pytestconfig):
     yad = pytestconfig.getoption('yad')
     remote = pytestconfig.getoption('remote')
     selenoid_url = pytestconfig.getoption('selenoid_url')
+    base_url = pytestconfig.getoption('base_url')
 
     driver = None
 
@@ -55,6 +56,7 @@ def browser(pytestconfig):
 
     elif browser_name == 'firefox':
         options = FirefoxOptions()
+        options.add_argument("--headless")
         if remote:
             options.set_capability("browserName", "firefox")
             options.set_capability("browserVersion", browser_version)
@@ -79,6 +81,8 @@ def browser(pytestconfig):
 
     else:
         raise ValueError(f"Unsupported browser: {browser_name}")
+
+    driver.base_url = base_url
 
     yield driver
     driver.quit()

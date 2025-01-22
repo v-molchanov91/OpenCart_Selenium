@@ -5,10 +5,16 @@ from selenium.common.exceptions import TimeoutException, WebDriverException
 
 
 class BasePage:
-    def __init__(self, browser):
+    def __init__(self, browser, base_url=""):
         self.browser = browser
+        self.base_url = base_url
         self.wait = WebDriverWait(browser, 10)
         self.logger = logging.getLogger(self.__class__.__name__)
+
+    def open(self, url=""):
+        full_url = f"{self.base_url}{url}" if self.base_url and not url.startswith("http") else url
+        self.logger.info(f"Открываем URL: {full_url}")
+        self.browser.get(full_url)
 
     def find(self, by, locator):
         try:

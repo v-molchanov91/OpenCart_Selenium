@@ -16,5 +16,5 @@ class MainPage(BasePage):
 
     @allure.step("Получаем цену товара с текущей валютой")
     def get_price_currency(self):
-        elf.logger.info("Получаем цену товара.")
+        self.logger.info("Получаем цену товара.")
         return self.get_text(*self.PRICE)
