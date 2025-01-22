@@ -10,6 +10,7 @@ class RegistrationPage(BasePage):
     PASSWORD_INPUT = (By.ID, "input-password")
     CONTINUE_BUTTON = (By.CSS_SELECTOR, "button[type='submit']")
     SUCCESS_MESSAGE = (By.CSS_SELECTOR, ".alert-success")
+    POLITICO = (By.CSS_SELECTOR, 'input[name="agree"]')
 
     @allure.step("Регистрируем пользователя: {firstname} {lastname}")
     def register_user(self, firstname, lastname, email, password):
@@ -18,7 +19,8 @@ class RegistrationPage(BasePage):
         self.input_text(*self.LASTNAME_INPUT, lastname)
         self.input_text(*self.EMAIL_INPUT, email)
         self.input_text(*self.PASSWORD_INPUT, password)
-        self.input_text(*self.CONTINUE_BUTTON)
+        self.click(*self.POLITICO)
+        self.click(*self.CONTINUE_BUTTON)
 
     @allure.step("Проверяем успешную регистрацию")
     def check_successful_registration(self):

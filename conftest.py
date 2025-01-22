@@ -13,7 +13,7 @@ def pytest_addoption(parser):
     parser.addoption('--yad', default='C:/Users/v.molchanov/Downloads/Drivers/yandexdriver.exe')
     parser.addoption('--remote', action='store_true', help='Run tests on remote Selenoid server')
     parser.addoption('--selenoid-url', default='http://localhost:4444/wd/hub', help='Selenoid URL')
-    parser.addoption('--base-url', default='http://192.168.1.19:8081/')
+    parser.addoption('--base-url', default='http://192.168.80.1:8081')
 
 
 @pytest.fixture(scope='session')
@@ -28,6 +28,7 @@ def browser(pytestconfig):
     yad = pytestconfig.getoption('yad')
     remote = pytestconfig.getoption('remote')
     selenoid_url = pytestconfig.getoption('selenoid_url')
+    base_url = pytestconfig.getoption('base_url')
 
     driver = None
 
@@ -53,6 +54,7 @@ def browser(pytestconfig):
 
     elif browser_name == 'firefox':
         options = FirefoxOptions()
+        options.add_argument("--headless")
         if remote:
             options.set_capability("browserName", "firefox")
             options.set_capability("browserVersion", browser_version)
@@ -77,6 +79,8 @@ def browser(pytestconfig):
 
     else:
         raise ValueError(f"Unsupported browser: {browser_name}")
+
+    driver.base_url = base_url
 
     yield driver
     driver.quit()

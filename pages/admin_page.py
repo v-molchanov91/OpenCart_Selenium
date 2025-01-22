@@ -20,7 +20,7 @@ class AdminPage(BasePage):
         self.logger.info("Авторизация в админке.")
         self.input_text(*self.USERNAME_INPUT, username)
         self.input_text(*self.PASSWORD_INPUT, password)
-        self.input_text(*self.LOGIN_BUTTON)
+        self.click(*self.LOGIN_BUTTON)
 
     @allure.step("Выходим из админки")
     def logout(self):
