@@ -13,7 +13,9 @@ def pytest_addoption(parser):
     parser.addoption('--yad', default='C:/Users/v.molchanov/Downloads/Drivers/yandexdriver.exe')
     parser.addoption('--remote', action='store_true', help='Run tests on remote Selenoid server')
     parser.addoption('--selenoid-url', default='http://localhost:4444/wd/hub', help='Selenoid URL')
-    parser.addoption('--base-url', default='http://192.168.80.1:8081')
+    parser.addoption('--base-url', default='http://192.168.1.19:8081/')
+    parser.addoption("--host", default="127.0.0.1")
+    parser.addoption("--port", default="5000")
 
 
 @pytest.fixture(scope='session')
@@ -103,3 +105,13 @@ def pytest_runtest_makereport(item, call):
         if item.config.getoption("remote"):
             video_url = f"{selenoid_url}/video/{item.name}.mp4"
             allure.attach(video_url, name="Test Video", attachment_type=allure.attachment_type.MP4)
+
+
+@pytest.fixture(scope="session")
+def host(request):
+    return request.config.getoption("--host")
+
+
+@pytest.fixture(scope="session")
+def port(request):
+    return request.config.getoption("--port")
