@@ -1,14 +1,12 @@
-# Используем базовый образ Python с минимальным размером
+# Используем минимальный образ Python
 FROM python:3.9-slim
 
-# Устанавливаем необходимые системные зависимости
+# Устанавливаем зависимости
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     curl \
     unzip \
     default-jre \
-    chromium \
-    firefox-esr \
     libnss3 \
     libxss1 \
     libasound2 \
@@ -23,7 +21,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Устанавливаем ChromeDriver
+# Устанавливаем Chrome и ChromeDriver
+RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
+    apt-get update && apt-get install -y --no-install-recommends ./google-chrome-stable_current_amd64.deb && \
+    rm google-chrome-stable_current_amd64.deb
+
 RUN wget -q https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip && \
     unzip chromedriver_linux64.zip -d /usr/local/bin/ && \
     rm chromedriver_linux64.zip && \
@@ -40,7 +42,7 @@ WORKDIR /app
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем весь проект в контейнер
+# Копируем весь проект
 COPY . /app
 
 # Устанавливаем Allure
@@ -52,18 +54,17 @@ RUN wget -q https://github.com/allure-framework/allure2/releases/download/2.20.1
 # Добавляем Allure CLI в PATH
 ENV PATH="/opt/allure-2.20.1/bin:${PATH}"
 
-# Добавляем том для отчётов
+# Добавляем том для отчетов
 VOLUME ["/app/reports"]
 
 # Проверяем версии браузеров и драйверов
-RUN chromium --version && \
+RUN google-chrome --version && \
     chromedriver --version && \
-    firefox --version && \
     geckodriver --version
 
-# Делаем рабочую директорию доступной
-WORKDIR /app
+# Копируем скрипт ожидания
+COPY wait-for-it.sh /app/wait-for-it.sh
+RUN chmod +x /app/wait-for-it.sh
 
-# Настраиваем возможность передачи параметров
-ENTRYPOINT ["pytest"]
-CMD ["--help"]
+# Запускаем тесты после ожидания OpenCart
+CMD ["./wait-for-it.sh", "opencart", "8080", "--", "pytest", "tests", "--browser", "chrome", "--browser-version", "114.0", "--alluredir=/app/reports"]

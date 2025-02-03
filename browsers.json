@@ -1,0 +1,40 @@
+{
+  "chrome": {
+    "default": "114.0",
+    "versions": {
+      "114.0": {
+        "image": "selenoid/vnc:chrome_114.0",
+        "port": "4444"
+      }
+    }
+  },
+  "firefox": {
+    "default": "106.0",
+    "versions": {
+      "106.0": {
+        "image": "selenoid/vnc:firefox_106.0",
+        "port": "4444"
+      }
+    }
+  },
+  "opera": {
+    "default": "90.0",
+    "versions": {
+      "90.0": {
+        "image": "selenoid/vnc:opera_90.0",
+        "port": "4444"
+      }
+    }
+  },
+  "MicrosoftEdge": {
+    "default": "107.0",
+    "versions": {
+      "107.0": {
+        "image": "selenoid/vnc:edge_107.0",
+        "port": "4444"
+      }
+    }
+  }
+}
+
+
